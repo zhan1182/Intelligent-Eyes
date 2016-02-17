@@ -23,9 +23,10 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 if __name__ == '__main__':
 
 	currentApp = QApplication(sys.argv)
-	currentForm = Intelligent_Eye()
 
-	currentForm.show()
+	currentUI = Intelligent_Eye()
+	currentUI.show()
+	
 	currentApp.exec_()
 
 
