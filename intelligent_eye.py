@@ -5,7 +5,7 @@ __author__ = 'Jinyi'
 import os
 import sys
 
-import src.client
+from src.client import Client
 
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -19,14 +19,22 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         super(Intelligent_Eye, self).__init__(parent)
         self.setupUi(self)
 
+def main():
+	# currentApp = QApplication(sys.argv)
+
+	# currentUI = Intelligent_Eye()
+	# currentUI.show()
+	
+	# currentApp.exec_()
+
+	ip = '192.168.0.123'
+	port = 8888
+
+	client = Client(ip, port)
+	
+
 
 if __name__ == '__main__':
-
-	currentApp = QApplication(sys.argv)
-
-	currentUI = Intelligent_Eye()
-	currentUI.show()
+	main()
 	
-	currentApp.exec_()
-
 
