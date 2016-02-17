@@ -34,12 +34,12 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self.btn_start.clicked.connect(self.start_preview)
         self.btn_stop.clicked.connect(self.stop_preview)
 
-	def start_preview(self):
-		self.client.connect()
-		self.client.send('S' + self.local_ip)
+    def start_preview(self):
+    	self.client.connect()
+    	self.client.send('S' + self.local_ip)
 
-	def stop_preview(self):
-		self.client.close()
+    def stop_preview(self):
+    	self.client.close()
 
 def main():
 	currentApp = QApplication(sys.argv)
