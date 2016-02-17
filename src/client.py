@@ -2,13 +2,21 @@
 
 import socket
 
-if __name__ == '__main__':
 
-	ip = '192.168.0.100'
+def main():
+	
+	raspberry_pi_ip = '192.168.0.123'
 	port = 8888
 
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-	s.connect((ip, port))
-	print s.recv(1024)
-	s.close 
+	s.connect((raspberry_pi_ip, port))
+
+
+
+	s.close
+
+if __name__ == '__main__':
+
+	main()
+	
