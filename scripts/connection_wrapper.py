@@ -38,7 +38,7 @@ class Server:
 		'''
 			ip = '0.0.0.0'
 		'''
-		self.ip = ip
+		self.ip = '0.0.0.0'
 		self.port = port
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.s.bind((self.ip, self.port))
@@ -47,6 +47,8 @@ class Server:
 	def receive_file(self):
 		self.connection = self.s.accept()[0].makefile('rb')
 
+	def receive_data(self):
+		return self.connection.read(1024)
 
 
 

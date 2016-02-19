@@ -12,7 +12,7 @@ from PySide.QtGui import *
 
 from ui.intelligent_eye_GUI import *
 
-from scripts.client import Client, Server
+from scripts.connection_wrapper import Client, Server
 import netifaces as ni
 
 class Intelligent_Eye(QMainWindow, Ui_MainWindow):
@@ -48,26 +48,34 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
     def start_preview(self):
     	'''
+    		Set a server socket
     		Init Client socket and connect to the raspberry ip
     		Send instruction to raspberry pi
-    		Set a server to accpet video data
     		Start mplayer locally
+    		Start receiving data from the raspberry pi
     	'''
+    	print('1')
+    	server_video = Server(self.port_video)
+    	print('2')
+
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.connect()
     	self.client_intr.send('S' + self.local_ip)
     	self.client_intr.close()
 
-    	server_video = Server
-
+    	server_video.receive_file()
+    	print('3')
 
     	cmdline = ['mplayer', '-fps', '24', '-cache', '1024', '-']
-    	# self.player = subprocess.Popen(cmdline, stdin=subprocess.PIPE)
+    	self.player = subprocess.Popen(cmdline, stdin=subprocess.PIPE)
 
-    	# while 1:
-    	# 	data = self.client.receive(1024)
-    	# 	player.stdin.write(data)
+    	while True:
+    		video_data = server_video.receive_data()
+    		if not video_data:
+    			break
+    		self.player.stdin.write(video_data)
 
+    	# self.stop_preview()
 
     def stop_preview(self):
     	'''
