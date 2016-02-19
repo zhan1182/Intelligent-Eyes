@@ -1,13 +1,15 @@
 #! /usr/bin/env python
 
+__author__ = 'Jinyi'
+
 import socket
 
 class Client:
 
 	def __init__(self, ip, port):
 		'''
-			ip = '192.168.0.123'
-			port = 8888
+			Raspberry_ip = '192.168.0.123'
+			port_intrs = 9999
 		'''
 		self.ip = ip
 		self.port = port
@@ -24,14 +26,28 @@ class Client:
 		if sent_len == 0:
 			raise RuntimeError('Socket connection broken')
 
-	def receive(self):
-		chunk = self.s.recv(16)
+	def receive(self, size):
+		chunk = self.s.recv(size)
 		if chunk == '':
 			raise RuntimeError('Socket connection broken')
-		
-		
+		return chunk
+
+class Server:
+
+	def __init__(self, port):
+		'''
+			ip = '0.0.0.0'
+		'''
+		self.ip = ip
+		self.port = port
+		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.s.bind((self.ip, self.port))
+		self.s.listen(1)
+
+	def receive_file(self):
+		self.connection = self.s.accept()[0].makefile('rb')
 
 
-	
+
 
 	
