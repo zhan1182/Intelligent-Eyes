@@ -51,5 +51,9 @@ class Server:
 		return self.connection.read(1024)
 
 
+	def close(self):
+		self.s.close()
+
+
 
 	

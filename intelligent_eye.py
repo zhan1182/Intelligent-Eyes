@@ -6,6 +6,7 @@ import os
 import sys
 import signal
 import subprocess
+import netifaces as ni
 
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -13,7 +14,7 @@ from PySide.QtGui import *
 from ui.intelligent_eye_GUI import *
 
 from scripts.connection_wrapper import Client, Server
-import netifaces as ni
+from scripts.threading_mplayer import Threading_Mplayer
 
 class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
@@ -50,38 +51,29 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	'''
     		Set a server socket
     		Init Client socket and connect to the raspberry ip
-    		Send instruction to raspberry pi
-    		Start mplayer locally
-    		Start receiving data from the raspberry pi
+    		Send instruction to raspberry pi, and get ready to receive the video file
+    		Start another thread which runs mplayer locally
+    		Keep reading video data and pipe them to mplayer
     	'''
-    	print('1')
-    	server_video = Server(self.port_video)
-    	print('2')
+    	self.server_video = Server(self.port_video)
 
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.connect()
     	self.client_intr.send('S' + self.local_ip)
     	self.client_intr.close()
 
-    	server_video.receive_file()
-    	print('3')
+    	self.server_video.receive_file()
 
-    	cmdline = ['mplayer', '-fps', '24', '-cache', '1024', '-']
-    	self.player = subprocess.Popen(cmdline, stdin=subprocess.PIPE)
+    	self.mplayer_t = Threading_Mplayer(self.server_video)
+    	self.mplayer_t.start()
 
-    	while True:
-    		video_data = server_video.receive_data()
-    		if not video_data:
-    			break
-    		self.player.stdin.write(video_data)
-
-    	# self.stop_preview()
 
     def stop_preview(self):
     	'''
     		Terminate the mplayer process and close the socket connection at the server side
     	'''
-    	# self.player.terminate()
+    	self.mplayer_t.stop()
+    	self.server_video.close()
 
     def take_pictures(self):
     	'''
