@@ -70,6 +70,7 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
     def stop_preview(self):
     	'''
+    		Send instruction to the raspberry pi to stop preview
     		Terminate the mplayer process and close the socket connection at the server side
     	'''
     	self.mplayer_t.stop()
