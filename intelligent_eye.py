@@ -15,6 +15,7 @@ from ui.intelligent_eye_GUI import *
 
 from scripts.connection_wrapper import Client, Server
 from scripts.threading_mplayer import Threading_Mplayer
+import scripts.peopledetect as People_Detect
 
 class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
@@ -97,15 +98,22 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     		Init Client socket and connect to the raspberry ip
     		Send instruction to raspberry pi
     		Check the return message from the raspberry pi, which means images transmitting is done
+    		Conduct human detection and display the results on the image views
     		Toggle buttons and navigatable status
     	'''
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.hand_shake('T' + self.local_ip)
 
     	check_call(['scp', '-q', 'pi@' + self.raspberry_ip + ':~/cam0.jpeg', 'pi@' + self.raspberry_ip + ':~/cam1.jpeg', './images/'])
-
     	# os.rename('cam0.jpeg', '')
     	# os.rename('cam1.jpeg', '')
+
+    	new_capture_image_list = ['./images/cam0.jpeg', './images/cam1.jpeg']
+
+    	People_Detect.detect(new_capture_image_list)
+
+        self.Views_showImage(self.view_cam0, new_capture_image_list[0])
+        self.Views_showImage(self.view_cam1, new_capture_image_list[1])
 
     	self.btn_navigate.setEnabled(True)
     	self.navigatable = True
@@ -113,6 +121,14 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     def navigate(self):
     	pass
 
+
+    def Views_showImage(self, view, image):
+    	imageScene = QGraphicsScene()
+        imageScene.addPixmap(QPixmap(image))
+
+        view.setScene(imageScene)
+        view.fitInView(imageScene.sceneRect(), Qt.KeepAspectRatio)
+        view.show()
 
 def main():
 	currentApp = QApplication(sys.argv)
