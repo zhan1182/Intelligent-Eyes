@@ -44,35 +44,42 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self.btn_init()
 
     def btn_init(self):
-    	pass
-
+    	self.btn_start.setEnabled(True)
+    	self.btn_stop.setEnabled(False)
+    	self.btn_takePics.setEnabled(False)
+    	self.btn_navigate.setEnabled(False)
 
     def start_preview(self):
     	'''
     		Set a server socket
-    		Init Client socket and connect to the raspberry ip
+    		Init a Client socket and connect to the raspberry ip
     		Send instruction to raspberry pi, and get ready to receive the video file
     		Start another thread which runs mplayer locally
     		Keep reading video data and pipe them to mplayer
+    		Toggle buttons
     	'''
     	self.server_video = Server(self.port_video)
 
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
-    	self.client_intr.connect()
-    	self.client_intr.send('S' + self.local_ip)
-    	self.client_intr.close()
+    	self.client_intr.hand_shake('S' + self.local_ip)
 
     	self.server_video.receive_file()
 
     	self.mplayer_t = Threading_Mplayer(self.server_video)
     	self.mplayer_t.start()
 
+    	self.btn_start.setEnabled(True)
+    	self.btn_stop.setEnabled(False)
+    	self.btn_takePics.setEnabled(True)
 
     def stop_preview(self):
     	'''
     		Send instruction to the raspberry pi to stop preview
     		Terminate the mplayer process and close the socket connection at the server side
     	'''
+    	self.client_intr = Client(self.raspberry_ip, self.port_intr)
+    	self.client_intr.hand_shake('P')
+
     	self.mplayer_t.stop()
     	self.server_video.close()
 
@@ -83,12 +90,7 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     		Check the return message from the raspberry pi, which means images transmitting is done
     	'''
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
-    	self.client_intr.connect()
-    	self.client_intr.send('T' + self.local_ip)
-    	chunk = self.client_intr.receive(16)
-    	if chunk == 'done':
-    		pass
-    	self.client_intr.close()
+    	self.client_intr.hand_shake('T' + self.local_ip)
 
     def navigate(self):
     	pass

@@ -15,22 +15,39 @@ class Client:
 		self.port = port
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-	def connect(self):
+		self.ACK = 'ACK'
+
+	def _connect(self):
 		self.s.connect((self.ip, self.port))
 
-	def close(self):
+	def _close(self):
 		self.s.close()
 
-	def send(self, message):
+	def _send(self, message):
 		sent_len = self.s.send(message)
 		if sent_len == 0:
 			raise RuntimeError('Socket connection broken')
 
-	def receive(self, size):
+	def _receive(self, size):
 		chunk = self.s.recv(size)
 		if chunk == '':
 			raise RuntimeError('Socket connection broken')
 		return chunk
+
+	def hand_shake(self, SYN):
+		"""
+		Send instruction to the server. Receive server's response.
+		Return True if hand_shake success, else return False
+		"""
+		self._connect()
+		self._send(SYN)
+		return_code = self._receive(16)
+		self._close()
+		if return_code != self.ACK:
+			raise RuntimeError('NACK')	
+		
+
+		
 
 class Server:
 
