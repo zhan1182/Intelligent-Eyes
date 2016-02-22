@@ -5,7 +5,7 @@ __author__ = 'Jinyi'
 import os
 import sys
 import signal
-import subprocess
+from subprocess import check_call
 import netifaces as ni
 
 from PySide.QtCore import *
@@ -45,6 +45,9 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self.btn_init()
 
     def btn_init(self):
+    	'''
+    		Init the states of buttons
+    	'''
     	self.btn_start.setEnabled(True)
     	self.btn_stop.setEnabled(False)
     	self.btn_takePics.setEnabled(False)
@@ -98,6 +101,11 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	'''
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.hand_shake('T' + self.local_ip)
+
+    	check_call(['scp', '-q', 'pi@' + self.raspberry_ip + ':~/cam0.jpeg', 'pi@' + self.raspberry_ip + ':~/cam1.jpeg', './images/'])
+
+    	# os.rename('cam0.jpeg', '')
+    	# os.rename('cam1.jpeg', '')
 
     	self.btn_navigate.setEnabled(True)
     	self.navigatable = True
