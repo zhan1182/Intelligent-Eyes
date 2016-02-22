@@ -32,6 +32,7 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self.local_ip = ni.ifaddresses('wlan0')[2][0]['addr']
         self.port_intr = 9999
         self.port_video = 8888
+        self.navigatable = False
 
         '''
         	Connect all buttons, set their init state
@@ -68,14 +69,15 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	self.mplayer_t = Threading_Mplayer(self.server_video)
     	self.mplayer_t.start()
 
-    	self.btn_start.setEnabled(True)
-    	self.btn_stop.setEnabled(False)
+    	self.btn_start.setEnabled(False)
+    	self.btn_stop.setEnabled(True)
     	self.btn_takePics.setEnabled(True)
 
     def stop_preview(self):
     	'''
     		Send instruction to the raspberry pi to stop preview
     		Terminate the mplayer process and close the socket connection at the server side
+    		Toggle buttons
     	'''
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.hand_shake('P')
@@ -83,17 +85,26 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	self.mplayer_t.stop()
     	self.server_video.close()
 
+    	self.btn_start.setEnabled(True)
+    	self.btn_stop.setEnabled(False)
+    	self.btn_takePics.setEnabled(False)
+
     def take_pictures(self):
     	'''
     		Init Client socket and connect to the raspberry ip
     		Send instruction to raspberry pi
     		Check the return message from the raspberry pi, which means images transmitting is done
+    		Toggle buttons and navigatable status
     	'''
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.hand_shake('T' + self.local_ip)
 
+    	self.btn_navigate.setEnabled(True)
+    	self.navigatable = True
+
     def navigate(self):
     	pass
+
 
 def main():
 	currentApp = QApplication(sys.argv)

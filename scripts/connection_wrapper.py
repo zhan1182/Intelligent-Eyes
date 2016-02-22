@@ -45,9 +45,7 @@ class Client:
 		self._close()
 		if return_code != self.ACK:
 			raise RuntimeError('NACK')	
-		
-
-		
+				
 
 class Server:
 
