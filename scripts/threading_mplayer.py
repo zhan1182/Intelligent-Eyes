@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+__author__ = 'Jinyi & Zhaoyang'
 
 import threading
 import subprocess
