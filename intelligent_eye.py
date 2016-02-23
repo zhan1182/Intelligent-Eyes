@@ -15,29 +15,31 @@ from ui.intelligent_eye_GUI import *
 
 from scripts.connection_wrapper import Client, Server
 from scripts.threading_mplayer import Threading_Mplayer
+
 import scripts.peopledetect as People_Detect
 
 class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
-    	'''
-    		UI set up
-    	'''
+    	"""
+    		UI set up, install event filter (key board listener)
+    	"""
         super(Intelligent_Eye, self).__init__(parent)
         self.setupUi(self)
+        self.installEventFilter(self)
 
-        '''
+        """
         	Init constants
-        '''
+        """
         self.raspberry_ip = '192.168.0.123' # Static IP Address
         self.local_ip = ni.ifaddresses('wlan0')[2][0]['addr']
         self.port_intr = 9999
         self.port_video = 8888
         self.navigatable = False
 
-        '''
+        """
         	Connect all buttons, set their init state
-        '''
+        """
         self.btn_start.clicked.connect(self.start_preview)
         self.btn_stop.clicked.connect(self.stop_preview)
         self.btn_takePics.clicked.connect(self.take_pictures)
@@ -46,23 +48,23 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self.btn_init()
 
     def btn_init(self):
-    	'''
+    	"""
     		Init the states of buttons
-    	'''
+    	"""
     	self.btn_start.setEnabled(True)
     	self.btn_stop.setEnabled(False)
     	self.btn_takePics.setEnabled(False)
     	self.btn_navigate.setEnabled(False)
 
     def start_preview(self):
-    	'''
+    	"""
     		Set a server socket
     		Init a Client socket and connect to the raspberry ip
     		Send instruction to raspberry pi, and get ready to receive the video file
     		Start another thread which runs mplayer locally
     		Keep reading video data and pipe them to mplayer
     		Toggle buttons
-    	'''
+    	"""
     	self.server_video = Server(self.port_video)
 
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
@@ -78,11 +80,11 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	self.btn_takePics.setEnabled(True)
 
     def stop_preview(self):
-    	'''
+    	"""
     		Send instruction to the raspberry pi to stop preview
     		Terminate the mplayer process and close the socket connection at the server side
     		Toggle buttons
-    	'''
+    	"""
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.hand_shake('P')
 
@@ -94,13 +96,13 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	self.btn_takePics.setEnabled(False)
 
     def take_pictures(self):
-    	'''
+    	"""
     		Init Client socket and connect to the raspberry ip
     		Send instruction to raspberry pi
     		Check the return message from the raspberry pi, which means images transmitting is done
     		Conduct human detection and display the results on the image views
     		Toggle buttons and navigatable status
-    	'''
+    	"""
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.hand_shake('T' + self.local_ip)
 
@@ -112,8 +114,8 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
     	People_Detect.detect(new_capture_image_list)
 
-        self.Views_showImage(self.view_cam0, new_capture_image_list[0])
-        self.Views_showImage(self.view_cam1, new_capture_image_list[1])
+        self._views_showImage(self.view_cam0, new_capture_image_list[0])
+        self._views_showImage(self.view_cam1, new_capture_image_list[1])
 
     	self.btn_navigate.setEnabled(True)
     	self.navigatable = True
@@ -122,7 +124,10 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	pass
 
 
-    def Views_showImage(self, view, image):
+    def _views_showImage(self, view, image):
+        """
+            Display image on the view widget
+        """
     	imageScene = QGraphicsScene()
         imageScene.addPixmap(QPixmap(image))
 
@@ -130,13 +135,34 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         view.fitInView(imageScene.sceneRect(), Qt.KeepAspectRatio)
         view.show()
 
-def main():
-	currentApp = QApplication(sys.argv)
+    def eventFilter(self, obj, event):
+        """
+            Listen and decode key board input: W, S, A, D
+        """
+        if event.type() == QEvent.KeyPress:
+            if event.key() == Qt.Key_W:
+                pass
+            elif event.key() == Qt.Key_S:
+                pass
+            elif event.key() == Qt.Key_A:
+                pass
+            elif event.key() == Qt.Key_D:
+                pass
+            return True
+        else:
+            return QObject.eventFilter(self, obj, event)
 
-	currentUI = Intelligent_Eye()
-	currentUI.show()
-	
-	currentApp.exec_()
+def main():
+    """
+        Start the UI at the main thread
+    """
+
+    currentApp = QApplication(sys.argv)
+
+    currentUI = Intelligent_Eye()
+    currentUI.show()
+
+    currentApp.exec_()
 
 
 if __name__ == '__main__':
