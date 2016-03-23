@@ -15,6 +15,7 @@ from ui.intelligent_eye_GUI import *
 
 from scripts.connection_wrapper import Client, Server
 from scripts.threading_mplayer import Threading_Mplayer
+from scripts.bluetooth_carControl import Car_Control
 
 import scripts.peopledetect as People_Detect
 
