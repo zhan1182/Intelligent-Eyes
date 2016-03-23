@@ -7,10 +7,10 @@ import socket
 class Client:
 
 	def __init__(self, ip, port):
-		'''
+		"""
 			Raspberry_ip = '192.168.0.123'
 			port_intrs = 9999
-		'''
+		"""
 		self.ip = ip
 		self.port = port
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,9 +50,9 @@ class Client:
 class Server:
 
 	def __init__(self, port):
-		'''
+		"""
 			ip = '0.0.0.0'
-		'''
+		"""
 		self.ip = '0.0.0.0'
 		self.port = port
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
