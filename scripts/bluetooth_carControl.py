@@ -2,7 +2,7 @@
 
 __author__ = 'Jinyi'
 
-
+import time
 import bluetooth
 
 class Car_Control:
@@ -21,7 +21,9 @@ class Car_Control:
 		self.client.connect((self.MAC, self.port))
 
 	def send(self):
-		self.client.send("hello")
+		while True:
+			self.client.send("hello")
+			time.sleep(1)
 
 	def close(self):
 		self.client.close()
@@ -40,7 +42,8 @@ class Car_Control:
 
 if __name__ == '__main__':
 	
-	MAC = '78:F7:BE:74:9D:28'
+	# MAC = '78:F7:BE:74:9D:28'
+	MAC = '20:14:08:05:43:82'
 	port = 1
 
 	control = Car_Control(MAC, port)
