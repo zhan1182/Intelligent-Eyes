@@ -4,31 +4,42 @@ __author__ = 'Jinyi'
 
 import time
 import bluetooth
+from connection_wrapper import Client
 
-class Car_Control:
+class Car_Control(Client):
 
 	def __init__(self, MAC, port):
 		"""
 		MAC: mac address string
 		Phone: '78:F7:BE:74:9D:28'
-		Bluetooth module: ''
+		Bluetooth module HC06: '20:14:08:05:43:82'
 		"""
-		self.MAC = MAC
-		self.port = port
-		self.client = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+		Client.__init__(self, MAC, port)
+		self.s = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 
-	def connect(self):
-		self.client.connect((self.MAC, self.port))
+		self.ACK = 'A'
 
-	def send(self):
-		while True:
-			self.client.send("hello")
-			time.sleep(1)
+		self._connect()
 
-	def close(self):
-		self.client.close()
+	def hand_shake(self, SYN):
+		"""
+		Overrding the parent function
+		"""
+		self._send(SYN)
+		return_code = self._receive(4)
+		if return_code != self.ACK:
+			raise RuntimeError('NACK')	
+	
+	def start_motor(self):
+		pass
+
+	def stop_motor(self):
+		pass
 
 	def forward(self):
+		"""
+		Turn the car to left
+		"""
 		pass
 
 	def backward(self):
@@ -48,9 +59,10 @@ if __name__ == '__main__':
 
 	control = Car_Control(MAC, port)
 
-	control.connect()
-	control.send()
-	control.close()
+	while 1:
+		control.hand_shake('2')
+		print("success")
+		time.sleep(1)
 
 
 
