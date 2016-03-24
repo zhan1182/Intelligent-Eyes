@@ -48,6 +48,15 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
         self.btn_init()
 
+        """
+            Connect bluetooth module
+        """
+
+
+        """
+            Display ready message
+        """
+
     def btn_init(self):
     	"""
     		Init the states of buttons
