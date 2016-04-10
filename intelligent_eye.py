@@ -15,6 +15,7 @@ from ui.intelligent_eye_GUI import *
 
 from scripts.connection_wrapper import Client, Server
 from scripts.threading_mplayer import Threading_Mplayer
+from scripts.bluetooth_carControl import Car_Control
 
 import scripts.peopledetect as People_Detect
 
@@ -46,6 +47,15 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self.btn_navigate.clicked.connect(self.navigate)
 
         self.btn_init()
+
+        """
+            Connect bluetooth module
+        """
+
+
+        """
+            Display ready message
+        """
 
     def btn_init(self):
     	"""
