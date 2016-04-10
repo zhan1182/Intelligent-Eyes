@@ -26,34 +26,30 @@ class Car_Control(Client):
 		Overrding the parent function
 		"""
 		self._send(SYN)
-		return_code = self._receive(4)
-		if return_code != self.ACK:
-			raise RuntimeError('NACK')	
+		# return_code = self._receive(4)
+		# if return_code != self.ACK:
+		# 	raise RuntimeError('NACK')
 	
-	def start_motor(self):
-		pass
-
 	def stop_motor(self):
-		pass
+		self.hand_shake('0')
 
 	def forward(self):
 		"""
-		Turn the car to left
+		Go straight forward
 		"""
-		pass
+		self.hand_shake('1')
 
 	def backward(self):
-		pass
+		self.hand_shake('2')
 
 	def left(self):
-		pass
+		self.hand_shake()
 
 	def right(self):
-		pass
+		self.hand_shake()
 
 if __name__ == '__main__':
 	
-	# MAC = '78:F7:BE:74:9D:28'
 	MAC = '20:14:08:05:43:82'
 	port = 1
 

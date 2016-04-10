@@ -19,6 +19,9 @@ from scripts.bluetooth_carControl import Car_Control
 
 import scripts.peopledetect as People_Detect
 
+from time import time
+from threading import Timer
+
 class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
@@ -27,7 +30,7 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	"""
         super(Intelligent_Eye, self).__init__(parent)
         self.setupUi(self)
-        self.installEventFilter(self)
+        self.installEventFilter(self) # Bind key listerner here
 
         """
         	Init constants
@@ -37,6 +40,14 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self.port_intr = 9999
         self.port_video = 8888
         self.navigatable = False
+        self.timer = True
+
+        """
+            Connect bluetooth module
+        """
+        # self.bt_MAC = '20:14:08:05:43:82'
+        # self.bt_port = 1
+        # self.bt_control = Car_Control(self.bt_MAC, self.bt_port)
 
         """
         	Connect all buttons, set their init state
@@ -47,11 +58,6 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self.btn_navigate.clicked.connect(self.navigate)
 
         self.btn_init()
-
-        """
-            Connect bluetooth module
-        """
-
 
         """
             Display ready message
@@ -113,14 +119,18 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     		Conduct human detection and display the results on the image views
     		Toggle buttons and navigatable status
     	"""
+        # time.sleep(3)
+
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.hand_shake('T' + self.local_ip)
 
     	check_call(['scp', '-q', 'pi@' + self.raspberry_ip + ':~/cam0.jpeg', 'pi@' + self.raspberry_ip + ':~/cam1.jpeg', './images/'])
-    	# os.rename('cam0.jpeg', '')
-    	# os.rename('cam1.jpeg', '')
+    	name1 = './images/' + str(time()) + '_left.jpeg'
+        name2 = './images/' + str(time()) + '_right.jpeg'
+        os.rename('./images/cam0.jpeg', name1)
+    	os.rename('./images/cam1.jpeg', name2)
 
-    	new_capture_image_list = ['./images/cam0.jpeg', './images/cam1.jpeg']
+    	new_capture_image_list = [name1, name2]
 
     	People_Detect.detect(new_capture_image_list)
 
@@ -150,17 +160,42 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
             Listen and decode key board input: W, S, A, D
         """
         if event.type() == QEvent.KeyPress:
-            if event.key() == Qt.Key_W:
-                pass
-            elif event.key() == Qt.Key_S:
-                pass
-            elif event.key() == Qt.Key_A:
-                pass
-            elif event.key() == Qt.Key_D:
-                pass
-            return True
+        	if event.key() == Qt.Key_W:
+        		print("w")
+        		# self.bt_control.forward()
+        	elif event.key() == Qt.Key_S:
+        		print("s")
+        		# self.bt_control.backward()
+        	elif event.key() == Qt.Key_A:
+        		pass
+        		# self.bt_control.left()
+        	elif event.key() == Qt.Key_D:
+        		pass
+        		# self.bt_control.right()
+        	elif event.key() == Qt.Key_Escape:
+        		print("space")
+        		# self.bt_control.stop_motor()
+        	return True
+
+        elif event.type() == QEvent.KeyRelease:
+        	print(self.timer)
+        	if self.timer ==  True:
+        		print("start timer")
+        		self.timer = False
+        		self.t = Timer(0.2, stop_motor)
+        		self.t.start()
+        	else:
+        		self.t.cancel()
+        	return True
+
         else:
             return QObject.eventFilter(self, obj, event)
+
+
+    def stop_motor(self):
+    	# self.bt_control.stop_motor()
+    	print("Release")
+    	self.timer = True
 
 def main():
     """
