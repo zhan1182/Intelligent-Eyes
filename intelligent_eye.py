@@ -45,9 +45,9 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         """
             Connect bluetooth module
         """
-        # self.bt_MAC = '20:14:08:05:43:82'
-        # self.bt_port = 1
-        # self.bt_control = Car_Control(self.bt_MAC, self.bt_port)
+        self.bt_MAC = '20:14:08:05:43:82'
+        self.bt_port = 1
+        self.bt_control = Car_Control(self.bt_MAC, self.bt_port)
 
         """
         	Connect all buttons, set their init state
@@ -70,7 +70,7 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	self.btn_start.setEnabled(True)
     	self.btn_stop.setEnabled(False)
     	self.btn_takePics.setEnabled(False)
-    	self.btn_navigate.setEnabled(False)
+    	self.btn_navigate.setEnabled(True)
 
     def start_preview(self):
     	"""
@@ -119,30 +119,35 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     		Conduct human detection and display the results on the image views
     		Toggle buttons and navigatable status
     	"""
-        # time.sleep(3)
-
     	self.client_intr = Client(self.raspberry_ip, self.port_intr)
     	self.client_intr.hand_shake('T' + self.local_ip)
 
     	check_call(['scp', '-q', 'pi@' + self.raspberry_ip + ':~/cam0.jpeg', 'pi@' + self.raspberry_ip + ':~/cam1.jpeg', './images/'])
-    	name1 = './images/' + str(time()) + '_left.jpeg'
-        name2 = './images/' + str(time()) + '_right.jpeg'
-        os.rename('./images/cam0.jpeg', name1)
-    	os.rename('./images/cam1.jpeg', name2)
+    	self.name1 = './images/' + str(time()) + '_left.jpeg'
+        self.name2 = './images/' + str(time()) + '_right.jpeg'
+        os.rename('./images/cam0.jpeg', self.name1)
+    	os.rename('./images/cam1.jpeg', self.name2)
 
-    	new_capture_image_list = [name1, name2]
+    	People_Detect.detect([self.name1, self.name2])
 
-    	People_Detect.detect(new_capture_image_list)
-
-        self._views_showImage(self.view_cam0, new_capture_image_list[0])
-        self._views_showImage(self.view_cam1, new_capture_image_list[1])
+        self._views_showImage(self.view_cam0, self.name1)
+        self._views_showImage(self.view_cam1, self.name2)
 
     	self.btn_navigate.setEnabled(True)
     	self.navigatable = True
 
     def navigate(self):
-    	pass
 
+    	if self.navigatable:
+    		self._navigate()
+    	else:
+    		self.removeEventFilter(self) # Disable key listerner here
+    		self.take_pictures()
+    		self._navigate()
+    		self.installEventFilter(self) # Enable key listerner here
+
+    def _navigate(self):
+    	print("navigate")
 
     def _views_showImage(self, view, image):
         """
@@ -160,21 +165,24 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
             Listen and decode key board input: W, S, A, D
         """
         if event.type() == QEvent.KeyPress:
+
+        	self.btn_navigate.setEnabled(False)
+        	self.navigatable = False
+
         	if event.key() == Qt.Key_W:
-        		print("w")
-        		# self.bt_control.forward()
+        		self.bt_control.forward()
         	elif event.key() == Qt.Key_S:
-        		print("s")
-        		# self.bt_control.backward()
+        		self.bt_control.backward()
         	elif event.key() == Qt.Key_A:
-        		pass
         		# self.bt_control.left()
-        	elif event.key() == Qt.Key_D:
+        		print('A')
         		pass
+        	elif event.key() == Qt.Key_D:
         		# self.bt_control.right()
+        		print('S')
+        		pass
         	elif event.key() == Qt.Key_Escape:
-        		print("space")
-        		# self.bt_control.stop_motor()
+        		self.bt_control.stop_motor()
         	return True
 
         elif event.type() == QEvent.KeyRelease:
@@ -193,9 +201,13 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
 
     def stop_motor(self):
-    	# self.bt_control.stop_motor()
-    	print("Release")
+    	"""
+    		Stop the motor, reset timer, enable navigate button
+    	"""
+    	self.bt_control.stop_motor()
     	self.timer = True
+
+    	self.btn_navigate.setEnabled(True)
 
 def main():
     """
