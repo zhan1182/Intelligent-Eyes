@@ -178,14 +178,14 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         	return True
 
         elif event.type() == QEvent.KeyRelease:
-        	print(self.timer)
         	if self.timer ==  True:
-        		print("start timer")
         		self.timer = False
-        		self.t = Timer(0.2, stop_motor)
+        		self.t = Timer(0.2, self.stop_motor)
         		self.t.start()
         	else:
         		self.t.cancel()
+        		self.t = Timer(0.2, self.stop_motor)
+        		self.t.start()
         	return True
 
         else:
