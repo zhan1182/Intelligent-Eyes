@@ -166,6 +166,9 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         """
         if event.type() == QEvent.KeyPress:
 
+        	if self.timer == False:
+        		return True
+        		
         	self.btn_navigate.setEnabled(False)
         	self.navigatable = False
 
@@ -174,13 +177,9 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         	elif event.key() == Qt.Key_S:
         		self.bt_control.backward()
         	elif event.key() == Qt.Key_A:
-        		# self.bt_control.left()
-        		print('A')
-        		pass
+        		self.bt_control.forward_left()
         	elif event.key() == Qt.Key_D:
-        		# self.bt_control.right()
-        		print('S')
-        		pass
+        		self.bt_control.forward_right()
         	elif event.key() == Qt.Key_Escape:
         		self.bt_control.stop_motor()
         	return True

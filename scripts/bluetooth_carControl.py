@@ -40,13 +40,22 @@ class Car_Control(Client):
 		self.hand_shake('1')
 
 	def backward(self):
+		"""
+		Go straight backward
+		"""
 		self.hand_shake('2')
 
-	def left(self):
-		self.hand_shake()
+	def forward_left(self):
+		"""
+		Go forward and left
+		"""
+		self.hand_shake('3')
 
-	def right(self):
-		self.hand_shake()
+	def forward_right(self):
+		"""
+		Go forward and right
+		"""
+		self.hand_shake('4')
 
 if __name__ == '__main__':
 	
