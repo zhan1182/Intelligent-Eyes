@@ -1,6 +1,8 @@
 from stereovision.calibration import StereoCalibration
 from stereovision.blockmatchers import StereoSGBM
 from stereovision.point_cloud import PointCloud
+from stereovision.stereo_cameras import CalibratedPair
+
 import cv2
 from glob import glob
 
@@ -11,6 +13,7 @@ class Point_cloud():
         self.calibration = StereoCalibration(input_folder=calib_foler)
         self.block_matcher = StereoSGBM()
         self.block_matcher.load_settings(settings=SGBM_setting)
+        self.CalibratedPair = CalibratedPair(None, self.calibration, self.block_matcher)
         self.imageSize = (1280, 720)
         self.left_img = None
         self.right_img = None
@@ -22,22 +25,25 @@ class Point_cloud():
     def rectify_image(self):
         return self.calibration.rectify([self.left_img, self.right_img])
 
-    def get_disparity(self, imagepair):
-        return self.block_matcher.get_disparity(imagepair)
+    def get_disparity(self):
+        imagePair = self.rectify_image()
+        print(imagePair)
+        return self.block_matcher.get_disparity(imagePair)
 
     def get_point_cloud(self, filename):
-        disparity = self.get_disparity()
-        points = self.block_matcher.get_3d(disparity, self.calibration.disp_to_depth_mat)
-        colors = cv2.cvtColor(self.left_img, cv2.COLOR_BGR2RGB)
-        point_cloud = PointCloud(points, colors)
-        point_cloud.write_ply(filename)
+        rectify_pair = self.CalibratedPair.calibration.rectify([self.left_img, self.right_img])
+        points = self.CalibratedPair.get_point_cloud(rectify_pair)
+        points = points.filter_infinity()
+        points.write_ply(filename)
+
+
 
     def highlight_point_cloud(self, rectangle):
-        imagepair = self.rectify_image()
-        disparity = self.get_disparity(imagepair)
+        rectify_pair = self.CalibratedPair.calibration.rectify([self.left_img, self.right_img])
+        disparity = self.get_disparity()
         points = self.block_matcher.get_3d(disparity, self.calibration.disp_to_depth_mat)
 
-        colors = cv2.cvtColor(imagepair[0], cv2.COLOR_BGR2RGB)
+
 
         #Conver to homogeneous coord
         pta = rectangle[0] + (1,)
@@ -53,6 +59,45 @@ class Point_cloud():
                     colors[row, col, 2] = 0
         point_cloud = PointCloud(points, colors)
         point_cloud.write_ply('test.ply')
+
+    def find_pos(self, quadra):
+        rectify_pair = self.CalibratedPair.calibration.rectify([self.left_img, self.right_img])
+        disparity = self.block_matcher.get_disparity(rectify_pair)
+        points = self.block_matcher.get_3d(disparity,
+                                           self.calibration.disp_to_depth_mat)
+
+
+        #Find the larger rectangle that contains quadrilateral
+        rmin = min(map(lambda x: x[0], quadra))
+        rmax = max(map(lambda x: x[0], quadra))
+        cmin = min(map(lambda x: x[1], quadra))
+        cmax = max(map(lambda x: x[1], quadra))
+
+        point_lst = []
+
+        pta = quadra[0] + (1,)
+        ptb = quadra[1] + (1,)
+        ptc = quadra[2] + (1,)
+        ptd = quadra[3] + (1,)
+        for row in range(rmin, rmax + 1):
+            for col in range(cmin, cmax + 1):
+                p = (col, row, 1)
+                if pointInQuadrilateral(p, pta, ptb, ptc, ptd):
+                    point_lst.append(points[row, col])
+
+        x_list = map(lambda x: x[0], point_lst)
+        x_list.sort()
+        y_list = map(lambda x: x[1], point_lst)
+        y_list.sort()
+        z_list = map(lambda x: x[2], point_lst)
+        z_list.sort()
+
+        median = (x_list[len(x_list) / 2], y_list[len(y_list) / 2], z_list[len(z_list) / 2])
+
+        return median
+
+
+
 
 
 def crossProduct(a, b):
@@ -91,11 +136,8 @@ def vec_plus(a, b):
 
 
 def sameSide(pt0, pt1, a, b):
-
     cp1 = crossProduct(vec_minus(b, a), vec_minus(pt0, a))
-
     cp2 = crossProduct(vec_minus(b, a), vec_minus(pt1, a))
-
     return dotProduct(cp1, cp2) >= 0
 
 
@@ -111,5 +153,7 @@ def pointInQuadrilateral(p, a, b, c, d):
 if __name__ == '__main__':
 
     pointCloud = Point_cloud()
-    pointCloud.load_image('image/test-06-l.jpg', 'imgage/test-06-r.jpg')
-    pointCloud.highlight_point_cloud([(200, 200), (400, 200), (400, 400), (200, 400)])
+    pointCloud.load_image('image/test-06-l.jpg', 'image/test-06-r.jpg')
+    # pointCloud.highlight_point_cloud([(200, 200), (400, 200), (400, 400), (200, 400)])
+    # pointCloud.get_point_cloud('test.ply')
+    print(pointCloud.find_pos([(0, 0), (200, 0), (0, 200), (200, 200)]))
