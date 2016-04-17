@@ -57,6 +57,13 @@ class Car_Control(Client):
 		"""
 		self.hand_shake('4')
 
+	def left(self):
+		self.hand_shake('5')
+
+	def right(self):
+		self.hand_shake('6')
+
+
 if __name__ == '__main__':
 	
 	MAC = '20:14:08:05:43:82'
@@ -64,10 +71,9 @@ if __name__ == '__main__':
 
 	control = Car_Control(MAC, port)
 
-	while 1:
-		control.hand_shake('2')
-		print("success")
-		time.sleep(1)
+	control.hand_shake('1')
+	time.sleep(2.5)
+	control.hand_shake('0')
 
 
 
