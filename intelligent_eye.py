@@ -128,7 +128,9 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         os.rename('./images/cam0.jpeg', self.name1)
     	os.rename('./images/cam1.jpeg', self.name2)
 
-    	People_Detect.detect([self.name1, self.name2])
+    	# Calibration
+
+    	self.rectangle_coor = People_Detect.detect([self.name2, self.name1])
 
         self._views_showImage(self.view_cam0, self.name1)
         self._views_showImage(self.view_cam1, self.name2)
@@ -137,7 +139,6 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	self.navigatable = True
 
     def navigate(self):
-
     	if self.navigatable:
     		self._navigate()
     	else:
