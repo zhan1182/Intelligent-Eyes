@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 from stereovision.calibration import StereoCalibration
 from stereovision.blockmatchers import StereoSGBM
 from stereovision.point_cloud import PointCloud
@@ -7,9 +9,9 @@ import cv2
 from glob import glob
 
 
-class Point_cloud():
+class Point_cloud:
 
-    def __init__(self, calib_foler = 'calib_param', SGBM_setting = 'settings/SGBM'):
+    def __init__(self, calib_foler = './calib_param', SGBM_setting = 'settings/SGBM'):
         self.calibration = StereoCalibration(input_folder=calib_foler)
         self.block_matcher = StereoSGBM()
         self.block_matcher.load_settings(settings=SGBM_setting)
@@ -152,8 +154,8 @@ def pointInQuadrilateral(p, a, b, c, d):
 
 if __name__ == '__main__':
 
-    pointCloud = Point_cloud()
-    pointCloud.load_image('image/test-06-l.jpg', 'image/test-06-r.jpg')
+    pointCloud = Point_cloud(calib_foler="calib_files_test")
+    pointCloud.load_image('image/left_1.jpeg', 'image/right_1.jpeg')
     # pointCloud.highlight_point_cloud([(200, 200), (400, 200), (400, 400), (200, 400)])
     # pointCloud.get_point_cloud('test.ply')
-    print(pointCloud.find_pos([(0, 0), (200, 0), (0, 200), (200, 200)]))
+    print(pointCloud.find_pos([(523, 69), (825, 69), (825, 673), (523, 673)]))
