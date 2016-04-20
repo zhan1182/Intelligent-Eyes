@@ -9,7 +9,7 @@ from glob import glob
 
 class Point_cloud():
 
-    def __init__(self, calib_foler = 'calib_param', SGBM_setting = 'settings/SGBM'):
+    def __init__(self, calib_foler = 'calib_files_test', SGBM_setting = 'settings/SGBM'):
         self.calibration = StereoCalibration(input_folder=calib_foler)
         self.block_matcher = StereoSGBM()
         self.block_matcher.load_settings(settings=SGBM_setting)
@@ -27,7 +27,6 @@ class Point_cloud():
 
     def get_disparity(self):
         imagePair = self.rectify_image()
-        print(imagePair)
         return self.block_matcher.get_disparity(imagePair)
 
     def get_point_cloud(self, filename):
@@ -42,7 +41,7 @@ class Point_cloud():
         rectify_pair = self.CalibratedPair.calibration.rectify([self.left_img, self.right_img])
         disparity = self.get_disparity()
         points = self.block_matcher.get_3d(disparity, self.calibration.disp_to_depth_mat)
-
+        colors = rectify_pair[0]
 
 
         #Conver to homogeneous coord
@@ -82,8 +81,8 @@ class Point_cloud():
         for row in range(rmin, rmax + 1):
             for col in range(cmin, cmax + 1):
                 p = (col, row, 1)
-                if pointInQuadrilateral(p, pta, ptb, ptc, ptd):
-                    point_lst.append(points[row, col])
+                # if pointInQuadrilateral(p, pta, ptb, ptc, ptd):
+                point_lst.append(points[row, col])
 
         x_list = map(lambda x: x[0], point_lst)
         x_list.sort()
@@ -91,7 +90,7 @@ class Point_cloud():
         y_list.sort()
         z_list = map(lambda x: x[2], point_lst)
         z_list.sort()
-
+        print(len(x_list))
         median = (x_list[len(x_list) / 2], y_list[len(y_list) / 2], z_list[len(z_list) / 2])
 
         return median
@@ -153,7 +152,7 @@ def pointInQuadrilateral(p, a, b, c, d):
 if __name__ == '__main__':
 
     pointCloud = Point_cloud()
-    pointCloud.load_image('image/test-06-l.jpg', 'image/test-06-r.jpg')
+    pointCloud.load_image('test/left_1.jpeg', 'test/right_1.jpeg')
     # pointCloud.highlight_point_cloud([(200, 200), (400, 200), (400, 400), (200, 400)])
     # pointCloud.get_point_cloud('test.ply')
-    print(pointCloud.find_pos([(0, 0), (200, 0), (0, 200), (200, 200)]))
+    print(pointCloud.find_pos([(639, 359), (641, 359), (641, 361), (639, 361)]))
