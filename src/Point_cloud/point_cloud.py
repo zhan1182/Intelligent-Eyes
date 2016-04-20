@@ -84,7 +84,7 @@ class Point_cloud:
             for col in range(cmin, cmax + 1):
                 p = (col, row, 1)
                 # if pointInQuadrilateral(p, pta, ptb, ptc, ptd):
-                point_lst.append(points[row, col])
+                point_lst.append(points[col, row])
 
         x_list = map(lambda x: x[0], point_lst)
         x_list.sort()
