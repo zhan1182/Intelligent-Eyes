@@ -37,13 +37,13 @@ class Car_Control(Client):
 		"""
 		Go straight forward
 		"""
-		self.hand_shake('1')
+		self.hand_shake('2')
 
 	def backward(self):
 		"""
 		Go straight backward
 		"""
-		self.hand_shake('2')
+		self.hand_shake('1')
 
 	def forward_left(self):
 		"""
