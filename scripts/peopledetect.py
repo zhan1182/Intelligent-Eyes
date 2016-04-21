@@ -138,22 +138,47 @@ def detect(image_list):
 				found_filtered.append(r)
 
 		# draw_detections(img, [max_rectange(found_filtered)], 1)
-		draw_detections(img, found_filtered, 1)
-		cv2.imwrite(fn, img)
+		# draw_detections(img, found_filtered, 1)
+		# cv2.imwrite(fn, img)
+	
     return max_rectange(found_filtered)
 
 def max_rectange(found_filtered):
-
-    if len(found_filtered) == 0:
-        return None
-
+	if len(found_filtered) == 0:
+		return None
 	max_r = found_filtered[0]
-
 	for r in found_filtered[1:]:
 		if r[2] * r[3] > max_r[2] * max_r[3]:
 			max_r = r
-
 	return max_r
+
+def detect_image_list(image_list, filename_list):
+	hog = cv2.HOGDescriptor()
+	hog.setSVMDetector( cv2.HOGDescriptor_getDefaultPeopleDetector() )
+
+	tmp_list = range(len(image_list))
+
+	for ct in tmp_list:
+
+		img = image_list[ct]
+
+		found, w = hog.detectMultiScale(img, winStride=(4, 4), padding=(16,16), scale=1.075)
+		found_filtered = []
+
+		for ri, r in enumerate(found):
+			for qi, q in enumerate(found):
+				if ri != qi and inside(r, q):
+					break
+			else:
+				if r[2] < 100 and r[3] < 200:
+					continue
+				found_filtered.append(r)
+
+		draw_detections(img, found_filtered, 1)
+		cv2.imwrite(filename_list[ct], img)
+
+	return found_filtered
+	# return max_rectange(found_filtered)
 
 if __name__ == '__main__':
     detect(sys.argv[1:])

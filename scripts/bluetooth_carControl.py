@@ -58,10 +58,10 @@ class Car_Control(Client):
 		self.hand_shake('4')
 
 	def left(self):
-		self.hand_shake('5')
+		self.hand_shake('6')
 
 	def right(self):
-		self.hand_shake('6')
+		self.hand_shake('5')
 
 
 if __name__ == '__main__':
