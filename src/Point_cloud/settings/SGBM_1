@@ -1,1 +1,1 @@
-{"P2": 864, "numDisparities": 112, "P1": 216, "speckleRange": 32, "fullDP": false, "uniquenessRatio": 10, "minDisparity": 12, "SADWindowSize": 3, "speckleWindowSize": 100, "disp12MaxDiff": 1}
+{"P2": 864, "numDisparities": 80, "P1": 216, "speckleRange": 32, "fullDP": false, "uniquenessRatio": 10, "minDisparity": 15, "SADWindowSize": 3, "speckleWindowSize": 100, "disp12MaxDiff": 1}
