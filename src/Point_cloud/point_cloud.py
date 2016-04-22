@@ -93,7 +93,7 @@ class Point_cloud:
         z_list = map(lambda x: x[2], point_lst)
         z_list.sort()
         print(len(x_list))
-        median = (x_list[len(x_list) / 2], y_list[len(y_list) / 2], z_list[len(z_list) / 2])
+        median = (x_list[len(x_list) / 2], y_list[len(y_list) / 2], z_list[len(z_list) / 3])
 
         return median
 

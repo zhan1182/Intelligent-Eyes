@@ -24,6 +24,7 @@ from threading import Timer
 
 from src.Point_cloud.point_cloud import *
 
+import math
 
 class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
@@ -114,7 +115,7 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
     	self.btn_start.setEnabled(True)
     	self.btn_stop.setEnabled(False)
-    	self.btn_takePics.setEnabled(False)
+    	# self.btn_takePics.setEnabled(False)
 
     def take_pictures(self):
     	"""
@@ -126,27 +127,32 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
             cam0: left
             cam1: right
     	"""
-
-     #    sleep(5)
-
         self.client_intr = Client(self.raspberry_ip, self.port_intr)
-    	self.client_intr.hand_shake('T' + self.local_ip)
-
-    	check_call(['scp', '-q', 'pi@' + self.raspberry_ip + ':~/cam0.jpeg', 'pi@' + self.raspberry_ip + ':~/cam1.jpeg', './images/'])
-    	self.name1 = './images/left_' + str(self.image_number) + '.jpeg'
+        self.client_intr.hand_shake('T' + self.local_ip)
+        check_call(['scp', '-q', 'pi@' + self.raspberry_ip + ':~/cam0.jpeg', 'pi@' + self.raspberry_ip + ':~/cam1.jpeg', './images/'])
+        self.name1 = './images/left_' + str(self.image_number) + '.jpeg'
         self.name2 = './images/right_' + str(self.image_number) + '.jpeg'
         os.rename('./images/cam0.jpeg', self.name1)
-    	os.rename('./images/cam1.jpeg', self.name2)
+        os.rename('./images/cam1.jpeg', self.name2)
 
         self.image_number += 1
 
     	# Calibration
         self.point_cloud.load_image(self.name1, self.name2)
         image_list = self.point_cloud.rectify_image()
-    	self.rectangle_coor_list = People_Detect.detect_image_list(image_list[:1], [self.name1])
+        self.rectangle_coor_list = People_Detect.detect_image_list(image_list[:1], [self.name1])
 
         self._views_showImage(self.view_cam1, self.name1)
         self._views_showImage(self.view_cam0, self.name2)
+
+        for rectangle_coor in self.rectangle_coor_list:
+            x, y, w, h = rectangle_coor
+            pad_w = int(0.2 * w)
+            pad_h = int(0.2 * h)
+            coor = [(x + pad_w, y + pad_h), (x + w - pad_w, y + pad_h), (x + w - pad_w, y + h - pad_h), (x + pad_w, y + h - pad_h)]
+            print(coor)
+            coor_x, coor_y, coor_z = self.point_cloud.find_pos(coor)
+            print(coor_x, coor_y, -coor_z)
 
     	self.btn_navigate.setEnabled(True)
     	self.navigatable = True
@@ -167,10 +173,48 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
             pad_h = int(0.15 * h)
             coor = [(x + pad_w, y + pad_h), (x + w - pad_w, y + pad_h), (x + w - pad_w, y + h - pad_h), (x + pad_w, y + h - pad_h)]
             print(coor)
-            t1 = time()
-            print(self.point_cloud.find_pos(coor))
-            t2 = time()
-            print(t2 - t1)
+
+            coor_x, coor_y, coor_z = self.point_cloud.find_pos(coor)
+
+            print(coor_x, coor_y, coor_z)
+
+            x_m = self._x_to_m(coor_x)
+            z_m = self._z_to_m(coor_z)
+
+            degree, distance = self._m_to_degree_distance(x_m, z_m)
+
+            self._naviagete_send_request(degree, distance)            
+
+    def _x_to_m(x):
+        pass
+
+    def _z_to_m(z):
+        pass
+
+    def _m_to_degree_distance(x_m, z_m):
+        
+        distance = math.sqrt(x_m * x_m + z_m * z_m)
+
+        degree = int(math.atan2(x_m, z_m) / math.pi * 180.0)
+
+        return degree, distance
+
+
+    def _naviagete_send_request(degree, distance):
+        t_distance = 1.2408 * distance + 0.2321
+
+        if degree < 0:
+            if degree == -1:
+                self.bt_control.hand_shake('A')
+        elif degree > 0:
+            if degree == 1:
+                self.bt_control.hand_shake('a')
+
+        sleep(1)
+
+        self.bt_control.forward()
+        sleep(t_distance)
+        self.bt_control.stop_motor()
 
 
     def _views_showImage(self, view, image):
@@ -198,29 +242,28 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
             elif event.key() == Qt.Key_S:
                 self.bt_control.backward()
             elif event.key() == Qt.Key_A:
-                self.bt_control.forward_left()
-            elif event.key() == Qt.Key_D:
-                self.bt_control.forward_right()
-            elif event.key() == Qt.Key_Q:
                 self.bt_control.left()
-            elif event.key() == Qt.Key_E:
+            elif event.key() == Qt.Key_D:
                 self.bt_control.right()
             elif event.key() == Qt.Key_Escape:
                 self.bt_control.stop_motor()
 
-        	return True
+            # elif event.key() == Qt.Key_B:
+            #     self.bt_control.forward()
+            #     sleep(7)
+            #     self.bt_control.stop_motor()
+
+            return True
 
         elif event.type() == QEvent.KeyRelease:
-            sleep(0.5)
-            self.bt_control.stop_motor()
-        # 	if self.timer ==  True:
-        # 		self.timer = False
-        # 		self.t = Timer(0.2, self.stop_motor)
-        # 		self.t.start()
-        # 	else:
-        # 		self.t.cancel()
-        # 		self.t = Timer(0.2, self.stop_motor)
-        # 		self.t.start()
+            if self.timer ==  True:
+                self.timer = False
+                self.t = Timer(0.2, self.stop_motor)
+                self.t.start()
+            else:
+                self.t.cancel()
+                self.t = Timer(0.2, self.stop_motor)
+                self.t.start()
             return True
 
         else:
