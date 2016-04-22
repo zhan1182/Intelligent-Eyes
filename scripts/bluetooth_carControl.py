@@ -5,6 +5,7 @@ __author__ = 'Jinyi'
 import time
 import bluetooth
 from connection_wrapper import Client
+from sys import stdin
 
 class Car_Control(Client):
 
@@ -37,13 +38,13 @@ class Car_Control(Client):
 		"""
 		Go straight forward
 		"""
-		self.hand_shake('2')
+		self.hand_shake('1')
 
 	def backward(self):
 		"""
 		Go straight backward
 		"""
-		self.hand_shake('1')
+		self.hand_shake('2')
 
 	def forward_left(self):
 		"""
@@ -71,9 +72,11 @@ if __name__ == '__main__':
 
 	control = Car_Control(MAC, port)
 
-	control.hand_shake('1')
-	time.sleep(2.5)
-	control.hand_shake('0')
+	while True:
+		t = stdin.readline()
+		control.hand_shake(t[0])
+	# time.sleep(2.5)
+	# control.hand_shake('0')
 
 
 
