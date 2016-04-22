@@ -25,6 +25,7 @@ from threading import Timer
 from src.Point_cloud.point_cloud import *
 
 import math
+import cv2
 
 class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
@@ -34,7 +35,7 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	"""
         super(Intelligent_Eye, self).__init__(parent)
         self.setupUi(self)
-        self.installEventFilter(self) # Bind key listerner here
+        # self.installEventFilter(self) # Bind key listerner here
         self.point_cloud = Point_cloud(calib_foler='./src/Point_cloud/calib_files_test', SGBM_setting='./src/Point_cloud/settings/SGBM_1')
 
         """
@@ -51,9 +52,9 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         """
             Connect bluetooth module
         """
-        self.bt_MAC = '20:14:08:05:43:82'
-        self.bt_port = 1
-        self.bt_control = Car_Control(self.bt_MAC, self.bt_port)
+        # self.bt_MAC = '20:14:08:05:43:82'
+        # self.bt_port = 1
+        # self.bt_control = Car_Control(self.bt_MAC, self.bt_port)
 
         """
         	Connect all buttons, set their init state
@@ -154,62 +155,73 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
             coor_x, coor_y, coor_z = self.point_cloud.find_pos(coor)
             print(coor_x, coor_y, -coor_z)
 
+        disparity = self.point_cloud.get_disparity()
+        cv2.imwrite("disparity" + str(self.image_number) + ".jpg", disparity)
+
     	self.btn_navigate.setEnabled(True)
     	self.navigatable = True
 
     def navigate(self):
+        self.removeEventFilter(self) # Disable key listerner here
     	if self.navigatable:
-    		self._navigate()
-    	else:
-    		self.removeEventFilter(self) # Disable key listerner here
-    		self.take_pictures()
-    		self._navigate()
-    		self.installEventFilter(self) # Enable key listerner here
+            self._navigate()
+        else:
+            self.take_pictures()
+            self._navigate()
+        self.installEventFilter(self) # Enable key listerner here
 
     def _navigate(self):
-    	for rectangle_coor in self.rectangle_coor_list:
+
+        if not self.rectangle_coor_list:
+            print("Failed to find a person!")
+            return
+
+        for rectangle_coor in self.rectangle_coor_list:
             x, y, w, h = rectangle_coor
             pad_w = int(0.15 * w)
             pad_h = int(0.15 * h)
             coor = [(x + pad_w, y + pad_h), (x + w - pad_w, y + pad_h), (x + w - pad_w, y + h - pad_h), (x + pad_w, y + h - pad_h)]
             print(coor)
-
             coor_x, coor_y, coor_z = self.point_cloud.find_pos(coor)
-
             print(coor_x, coor_y, coor_z)
 
-            x_m = self._x_to_m(coor_x)
-            z_m = self._z_to_m(coor_z)
+            if (-coor_z) > 16 and (-coor_z) < 30:
+                break
+        else:
+            print("Failed to find the direction and distance")
+            return
 
-            degree, distance = self._m_to_degree_distance(x_m, z_m)
+        # Center of the rectangle
+        p = x + w / 2.0
+        degree = self._get_degree(p)
+        if degree > 25 or degree < -25:
+            print("Failed to find the direction")
+            return
 
-            self._naviagete_send_request(degree, distance)            
-
-    def _x_to_m(x):
-        pass
-
-    def _z_to_m(z):
-        pass
-
-    def _m_to_degree_distance(x_m, z_m):
+        distance = self._get_distance(coor_z, degree)
         
-        distance = math.sqrt(x_m * x_m + z_m * z_m)
+        self._naviagete_send_request(degree, distance)
 
-        degree = int(math.atan2(x_m, z_m) / math.pi * 180.0)
+    def _get_degree(p):
+        degree = int(math.atan((p - 640) / 1269.8) / math.pi * 180.0)
 
-        return degree, distance
+        return degree
+        
+    def _get_distance(z, degree):
+        # Take off the length of the car
+        distance = 0.2576 * z - 1.4744
+
+        return distance / (math.cos(degree * math.pi / 180.0))
 
 
     def _naviagete_send_request(degree, distance):
         t_distance = 1.2408 * distance + 0.2321
 
-        if degree < 0:
-            if degree == -1:
-                self.bt_control.hand_shake('A')
-        elif degree > 0:
-            if degree == 1:
-                self.bt_control.hand_shake('a')
-
+        if degree <= -1:
+            self.bt_control.hand_shake(chr(65 - degree))
+        elif degree >= 1:
+            self.bt_control.hand_shake(chr(97 + degree))
+            
         sleep(1)
 
         self.bt_control.forward()

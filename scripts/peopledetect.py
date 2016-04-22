@@ -177,6 +177,8 @@ def detect_image_list(image_list, filename_list):
 		draw_detections(img, found_filtered, 1)
 		cv2.imwrite(filename_list[ct], img)
 
+	found_filtered.sort(key=lambda x: x[2] * x[3], reverse=True)
+
 	return found_filtered
 	# return max_rectange(found_filtered)
 

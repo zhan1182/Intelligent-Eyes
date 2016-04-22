@@ -75,8 +75,5 @@ if __name__ == '__main__':
 	while True:
 		t = stdin.readline()
 		control.hand_shake(t[0])
-	# time.sleep(2.5)
-	# control.hand_shake('0')
-
 
 
