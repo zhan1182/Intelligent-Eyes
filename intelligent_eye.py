@@ -35,7 +35,7 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     	"""
         super(Intelligent_Eye, self).__init__(parent)
         self.setupUi(self)
-        # self.installEventFilter(self) # Bind key listerner here
+        self.installEventFilter(self) # Bind key listerner here
         self.point_cloud = Point_cloud(calib_foler='./src/Point_cloud/calib_files_test', SGBM_setting='./src/Point_cloud/settings/SGBM_1')
 
         """
@@ -52,9 +52,9 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         """
             Connect bluetooth module
         """
-        # self.bt_MAC = '20:14:08:05:43:82'
-        # self.bt_port = 1
-        # self.bt_control = Car_Control(self.bt_MAC, self.bt_port)
+        self.bt_MAC = '20:14:08:05:43:82'
+        self.bt_port = 1
+        self.bt_control = Car_Control(self.bt_MAC, self.bt_port)
 
         """
         	Connect all buttons, set their init state
@@ -146,17 +146,14 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self._views_showImage(self.view_cam1, self.name1)
         self._views_showImage(self.view_cam0, self.name2)
 
-        for rectangle_coor in self.rectangle_coor_list:
-            x, y, w, h = rectangle_coor
-            pad_w = int(0.2 * w)
-            pad_h = int(0.2 * h)
-            coor = [(x + pad_w, y + pad_h), (x + w - pad_w, y + pad_h), (x + w - pad_w, y + h - pad_h), (x + pad_w, y + h - pad_h)]
-            print(coor)
-            coor_x, coor_y, coor_z = self.point_cloud.find_pos(coor)
-            print(coor_x, coor_y, -coor_z)
-
-        disparity = self.point_cloud.get_disparity()
-        cv2.imwrite("disparity" + str(self.image_number) + ".jpg", disparity)
+        # for rectangle_coor in self.rectangle_coor_list:
+        #     x, y, w, h = rectangle_coor
+        #     pad_w = int(0.2 * w)
+        #     pad_h = int(0.2 * h)
+        #     coor = [(x + pad_w, y + pad_h), (x + w - pad_w, y + pad_h), (x + w - pad_w, y + h - pad_h), (x + pad_w, y + h - pad_h)]
+        #     print(coor)
+        #     coor_x, coor_y, coor_z = self.point_cloud.find_pos(coor)
+        #     print(coor_x, coor_y, -coor_z)
 
     	self.btn_navigate.setEnabled(True)
     	self.navigatable = True
@@ -175,6 +172,10 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         if not self.rectangle_coor_list:
             print("Failed to find a person!")
             return
+
+        disparity = self.point_cloud.get_disparity()
+        cv2.imwrite("disparity" + str(self.image_number) + ".jpg", disparity)
+
 
         for rectangle_coor in self.rectangle_coor_list:
             x, y, w, h = rectangle_coor
@@ -198,22 +199,24 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
             print("Failed to find the direction")
             return
 
-        distance = self._get_distance(coor_z, degree)
+        distance = self._get_distance(-coor_z, degree)
         
         self._naviagete_send_request(degree, distance)
 
+    @staticmethod
     def _get_degree(p):
         degree = int(math.atan((p - 640) / 1269.8) / math.pi * 180.0)
 
         return degree
-        
+    
+    @staticmethod
     def _get_distance(z, degree):
         # Take off the length of the car
         distance = 0.2576 * z - 1.4744
 
         return distance / (math.cos(degree * math.pi / 180.0))
 
-
+    @staticmethod
     def _naviagete_send_request(degree, distance):
         t_distance = 1.2408 * distance + 0.2321
 
