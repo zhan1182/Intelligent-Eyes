@@ -224,8 +224,8 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
 
         if degree <= -1 and degree >= -23:
             self.bt_control.hand_shake(chr(97 - degree))
-        elif degree >= 1 and degree <= 23:
-            self.bt_control.hand_shake(chr(66 + degree))
+        elif degree >= 1 and degree <= 22:
+            self.bt_control.hand_shake(chr(67 + degree))
             
         sleep(1)
 
