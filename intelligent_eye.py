@@ -186,7 +186,7 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
             coor_x, coor_y, coor_z = self.point_cloud.find_pos(coor)
             print(coor_x, coor_y, coor_z)
 
-            if (-coor_z) > 16 and (-coor_z) < 30:
+            if (-coor_z) > 16 and (-coor_z) < 35:
                 break
         else:
             print("Failed to find the direction and distance")
@@ -207,6 +207,8 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     def _get_degree(p):
         degree = int(math.atan((p - 640) / 1269.8) / math.pi * 180.0)
 
+        print(degree)
+
         return degree
     
     @staticmethod
@@ -214,16 +216,16 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         # Take off the length of the car
         distance = 0.2576 * z - 1.4744
 
-        return distance / (math.cos(degree * math.pi / 180.0))
+        return distance
+        # return distance / (math.cos(degree * math.pi / 180.0))
 
-    @staticmethod
-    def _naviagete_send_request(degree, distance):
+    def _naviagete_send_request(self, degree, distance):
         t_distance = 1.2408 * distance + 0.2321
 
-        if degree <= -1:
-            self.bt_control.hand_shake(chr(65 - degree))
-        elif degree >= 1:
-            self.bt_control.hand_shake(chr(97 + degree))
+        if degree <= -1 and degree >= -23:
+            self.bt_control.hand_shake(chr(97 - degree))
+        elif degree >= 1 and degree <= 22:
+            self.bt_control.hand_shake(chr(67 + degree))
             
         sleep(1)
 
