@@ -146,15 +146,6 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
         self._views_showImage(self.view_cam1, self.name1)
         self._views_showImage(self.view_cam0, self.name2)
 
-        # for rectangle_coor in self.rectangle_coor_list:
-        #     x, y, w, h = rectangle_coor
-        #     pad_w = int(0.2 * w)
-        #     pad_h = int(0.2 * h)
-        #     coor = [(x + pad_w, y + pad_h), (x + w - pad_w, y + pad_h), (x + w - pad_w, y + h - pad_h), (x + pad_w, y + h - pad_h)]
-        #     print(coor)
-        #     coor_x, coor_y, coor_z = self.point_cloud.find_pos(coor)
-        #     print(coor_x, coor_y, -coor_z)
-
     	self.btn_navigate.setEnabled(True)
     	self.navigatable = True
 
@@ -207,8 +198,6 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
     def _get_degree(p):
         degree = int(math.atan((p - 640) / 1269.8) / math.pi * 180.0)
 
-        print(degree)
-
         return degree
     
     @staticmethod
@@ -250,8 +239,6 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
             Listen and decode key board input: W, S, A, D
         """
         if event.type() == QEvent.KeyPress:
-            # if self.timer == False:
-            # 	return True
             self.btn_navigate.setEnabled(False)
             self.navigatable = False
             if event.key() == Qt.Key_W:
@@ -264,11 +251,6 @@ class Intelligent_Eye(QMainWindow, Ui_MainWindow):
                 self.bt_control.right()
             elif event.key() == Qt.Key_Escape:
                 self.bt_control.stop_motor()
-
-            # elif event.key() == Qt.Key_B:
-            #     self.bt_control.forward()
-            #     sleep(7)
-            #     self.bt_control.stop_motor()
 
             return True
 
